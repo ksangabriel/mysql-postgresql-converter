@@ -6,6 +6,8 @@ imported to a new PostgreSQL database.
 
 Dump using:
 mysqldump --compatible=postgresql --default-character-set=utf8 -r databasename.mysql -u root databasename
+
+Modified for Python 3.7.0
 """
 
 import re
@@ -22,7 +24,9 @@ def parse(input_filename, output_filename):
     if input_filename == "-":
         num_lines = -1
     else:
-        num_lines = int(subprocess.check_output(["wc", "-l", input_filename]).strip().split()[0])
+        num_lines = opcount(input_filename)
+
+    print(num_lines)
     tables = {}
     current_table = None
     creation_lines = []
@@ -69,7 +73,8 @@ def parse(input_filename, output_filename):
             secs_left % 60,
         ))
         logging.flush()
-        line = line.decode("utf8").strip().replace(r"\\", "WUBWUBREALSLASHWUB").replace(r"\'", "''").replace("WUBWUBREALSLASHWUB", r"\\")
+
+        line = line.strip().replace(r"\\", "WUBWUBREALSLASHWUB").replace(r"\'", "''").replace("WUBWUBREALSLASHWUB", r"\\")
         # Ignore comment lines
         if line.startswith("--") or line.startswith("/*") or line.startswith("LOCK TABLES") or line.startswith("DROP TABLE") or line.startswith("UNLOCK TABLES") or not line:
             continue
@@ -87,7 +92,7 @@ def parse(input_filename, output_filename):
                 num_inserts += 1
             # ???
             else:
-                print "\n ! Unknown line in main body: %s" % line
+                print ("\n ! Unknown line in main body: %s" % line)
 
         # Inside-create-statement handling
         else:
@@ -187,7 +192,7 @@ def parse(input_filename, output_filename):
                 current_table = None
             # ???
             else:
-                print "\n ! Unknown line inside table creation: %s" % line
+                print ("\n ! Unknown line inside table creation: %s" % line)
 
 
     # Finish file
@@ -218,8 +223,13 @@ def parse(input_filename, output_filename):
     # Finish file
     output.write("\n")
     output.write("COMMIT;\n")
-    print ""
+    print ("")
 
+def opcount(fname):
+    with open(fname) as f:
+        for i, l in enumerate(f):
+            pass
+    return i + 1
 
 if __name__ == "__main__":
     parse(sys.argv[1], sys.argv[2])
